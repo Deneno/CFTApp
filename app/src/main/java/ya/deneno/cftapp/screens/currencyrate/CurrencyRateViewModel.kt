@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import ya.deneno.cftapp.APP
 import ya.deneno.cftapp.REPOSITORY
@@ -13,9 +15,10 @@ import ya.deneno.cftapp.db.repository.CurrencyRealization
 import ya.deneno.cftapp.model.CurrencyModel
 
 class CurrencyRateViewModel: ViewModel() {
-
+    private var job: Job = viewModelScope.launch {}
     fun syncCurrencyRate(): LiveData<List<CurrencyModel>> {
-        viewModelScope.launch {
+        job.cancel()
+        job = viewModelScope.launch {
             REPOSITORY.deleteAllCurrency{}
             val response = RetrofitInstance.api.getCurrencyRateFromApi().body()
             val map = response?.Valute
@@ -28,9 +31,10 @@ class CurrencyRateViewModel: ViewModel() {
                             Nominal = currency.Nominal,
                             Previous = currency.Previous,
                             Value = currency.Value,
-                            Date = response.Date
+                            Date = response.Timestamp
                         )
                     ){}
+
                 }
             }
         }

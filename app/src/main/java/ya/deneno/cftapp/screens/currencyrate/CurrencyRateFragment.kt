@@ -1,13 +1,13 @@
 package ya.deneno.cftapp.screens.currencyrate
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
-import ya.deneno.cftapp.TODAY
 import ya.deneno.cftapp.databinding.FragmentCurrencyRateBinding
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,15 +41,24 @@ class CurrencyRateFragment : Fragment() {
         viewModel.getAllCurrency().observe(viewLifecycleOwner) {
             adapter.setList(it)
         }
-        //Установка даты
-        viewModel.getOne().observe(viewLifecycleOwner) { model  ->
-            TODAY = SimpleDateFormat("yyyy-MM-d", Locale.getDefault()).parse(model.Date)?.let {
-                SimpleDateFormat("d.MM.yyyy", Locale.getDefault()).format(it)}.toString()
-            binding.titleCurrencyRate.text = "Курс валют ЦБ РФ на $TODAY, рублей"
-        }
         //Кнопка синхронизации
         binding.buttonSync.setOnClickListener{
             viewModel.syncCurrencyRate()
+        }
+        //Установка даты и Периодическое обновление приложение
+        viewModel.getOne().observe(viewLifecycleOwner) { model ->
+            if (model != null) {
+                val dateRaw = SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss", Locale.getDefault()).parse(model.Date)
+                Log.d("myLog", "$dateRaw")
+                if (dateRaw.time - Date().time < 7500000) {
+                    viewModel.syncCurrencyRate()
+                    Log.d("myLog", "Обновилось по времени")
+                }
+                val date = dateRaw?.let {
+                    SimpleDateFormat("d.MM.yyyy", Locale.getDefault()).format(it)
+                }.toString()
+                binding.titleCurrencyRate.text = "Курс валют ЦБ РФ на $date, рублей"
+            }
         }
     }
 }
