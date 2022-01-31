@@ -39,6 +39,7 @@ class CurrencyRateFragment : Fragment() {
         recyclerView.adapter = adapter
         //Заполнение RecyclerView
         viewModel.getAllCurrency().observe(viewLifecycleOwner) {
+            if (it.isEmpty()) viewModel.syncCurrencyRate()
             adapter.setList(it)
         }
         //Кнопка синхронизации
@@ -49,8 +50,7 @@ class CurrencyRateFragment : Fragment() {
         viewModel.getOne().observe(viewLifecycleOwner) { model ->
             if (model != null) {
                 val dateRaw = SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss", Locale.getDefault()).parse(model.Date)
-                Log.d("myLog", "$dateRaw")
-                if (dateRaw.time - Date().time < 7500000) {
+                if (dateRaw.time - Date().time < 6900000) {
                     viewModel.syncCurrencyRate()
                     Log.d("myLog", "Обновилось по времени")
                 }
